@@ -12,7 +12,7 @@ const (
 	host     = "localhost"
 	user     = "postgres"
 	password = ""
-	port     = 5432
+	port     = 5433
 )
 
 func main() {
