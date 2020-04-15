@@ -13,6 +13,10 @@ import (
 	_ "github.com/lib/pq"
 )
 
+type App struct {
+	db *sqlx.DB
+}
+
 const (
 	dbName   = "werewolf"
 	host     = "localhost"
@@ -21,13 +25,12 @@ const (
 	dbPort   = 5433
 )
 
-func PlayHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Hello"))
+func newApp() App {
+	db := initDB()
+	return App{db: db}
 }
 
-func main() {
+func initDB() *sqlx.DB {
 	dbinfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		host,
 		dbPort,
@@ -37,19 +40,32 @@ func main() {
 	)
 
 	db, err := sqlx.Open("postgres", dbinfo)
-	defer db.Close()
-
 	if err != nil {
 		panic(err)
 	}
 
-	err = db.Ping()
+	return db
+}
 
+func (app *App) ping() {
+	err := app.db.Ping()
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println("Postgres connected")
+	fmt.Println("PONG")
+}
+
+func PlayHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Hello"))
+}
+
+func main() {
+	app := newApp()
+	defer app.db.Close()
+	app.ping()
 
 	router := mux.NewRouter()
 	router.HandleFunc("/play", PlayHandler).Methods("GET")
