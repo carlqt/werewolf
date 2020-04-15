@@ -47,31 +47,15 @@ func initDB() *sqlx.DB {
 	return db
 }
 
-func (app *App) ping() {
-	err := app.db.Ping()
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println("PONG")
-}
-
-func PlayHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Hello"))
-}
-
 func main() {
 	app := newApp()
 	defer app.db.Close()
-	app.ping()
 
 	router := mux.NewRouter()
-	router.HandleFunc("/play", PlayHandler).Methods("GET")
-	loggedRouter := handlers.LoggingHandler(os.Stdout, router)
+	router.Handle("/play", GamesCreate(&app)).Methods("GET")
+	router.Use(ResponseHeaderHandler)
 
 	log.Println("starting at port 8000")
+	loggedRouter := handlers.LoggingHandler(os.Stdout, router)
 	http.ListenAndServe(":8000", loggedRouter)
-
 }
