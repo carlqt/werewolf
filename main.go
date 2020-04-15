@@ -31,11 +31,10 @@ func newApp() App {
 }
 
 func initDB() *sqlx.DB {
-	dbinfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+	dbinfo := fmt.Sprintf("host=%s port=%d user=%s dbname=%s sslmode=disable",
 		host,
 		dbPort,
 		user,
-		password,
 		dbName,
 	)
 
