@@ -4,22 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/jmoiron/sqlx"
+	"github.com/carlqt/werewolf/models"
 )
-
-func NewGame(db *sqlx.DB) (int64, error) {
-	res, err := db.Exec("INSERT INTO games DEFAULT VALUES")
-	if err != nil {
-		return 0, err
-	}
-
-	rowsAffected, err := res.RowsAffected()
-	if err != nil {
-		return 0, err
-	}
-
-	return rowsAffected, nil
-}
 
 func ResponseHeaderHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -31,12 +17,13 @@ func ResponseHeaderHandler(next http.Handler) http.Handler {
 
 func GamesCreate(app *App) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		rowsAffected, err := NewGame(app.db)
+		err := models.NewGame(app.db)
+
 		if err != nil {
 			w.WriteHeader(http.StatusUnprocessableEntity)
 			w.Write([]byte(err.Error()))
 		} else {
-			textResponse := fmt.Sprintf("%d game is starting", rowsAffected)
+			textResponse := fmt.Sprintf("The game is starting")
 			w.WriteHeader(http.StatusOK)
 			w.Write([]byte(textResponse))
 		}
