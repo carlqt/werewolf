@@ -1,6 +1,6 @@
 -- migrate:up
 CREATE TABLE games (
-  id int NOT NULL,
+  id serial NOT NULL,
   state int NOT NULL DEFAULT 0,
   phase int NOT NULL DEFAULT 0,
   phase_count int,

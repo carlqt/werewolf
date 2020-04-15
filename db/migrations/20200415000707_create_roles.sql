@@ -1,6 +1,6 @@
 -- migrate:up
 CREATE TABLE roles (
-  id int NOT NULL,
+  id serial NOT NULL,
   name varchar(128),
   description TEXT,
 

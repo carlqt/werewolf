@@ -1,6 +1,6 @@
 -- migrate:up
 CREATE TABLE players (
-  id int NOT NULL,
+  id serial NOT NULL,
   game_id int,
   role_id int,
   name varchar(128),
