@@ -22,3 +22,11 @@ func NewGame(db *sqlx.DB) error {
 
 	return nil
 }
+
+func (game *Game) Create(db *sqlx.DB) error {
+	stmt, err := db.Prepare("INSERT INTO	games(state, phase, phase_count) VALUES($1, $2, $3)")
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+}
