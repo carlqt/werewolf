@@ -11,6 +11,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
+	"github.com/rs/cors"
 )
 
 type App struct {
@@ -52,9 +53,16 @@ func main() {
 
 	router := mux.NewRouter()
 	router.Handle("/play", GamesCreate(&app)).Methods("GET")
+	router.Handle("/join", GamesJoin(&app)).Methods("POST")
 	router.Use(ResponseHeaderHandler)
+
+	corsOptions := cors.New(cors.Options{
+		// AllowedOrigins: []string{"*"},
+		AllowedMethods: []string{"OPTIONS", "GET", "POST"},
+		AllowedHeaders: []string{"Content-Type"},
+	})
 
 	log.Println("starting at port 8000")
 	loggedRouter := handlers.LoggingHandler(os.Stdout, router)
-	http.ListenAndServe(":8000", loggedRouter)
+	http.ListenAndServe(":8000", corsOptions.Handler(loggedRouter))
 }

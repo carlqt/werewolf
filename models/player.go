@@ -10,7 +10,7 @@ type Player struct {
 	ID     string `json:"id" db:"id"`
 	GameID int    `json:"game_id" db:"game_id"`
 	RoleID int    `json:"role_id" db:"role_id"`
-	Name   int    `json:"name" db:"name"`
+	Name   string `json:"name" db:"name"`
 	State  int    `json:"state" db:"state"`
 }
 
@@ -21,5 +21,6 @@ func (player *Player) Create(db *sqlx.DB) error {
 		return err
 	}
 
-	return _, stmt.Exec(player.GameID, player.RoleID, player.Name, player.State)
+	_, err = stmt.Exec(player.GameID, player.RoleID, player.Name, player.State)
+	return err
 }
