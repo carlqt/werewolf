@@ -40,8 +40,14 @@ func ActiveGameOnChannel(db *sqlx.DB, channelID string) (*Game, error) {
 	return &game, nil
 }
 
-func NewGame(db *sqlx.DB) error {
-	_, err := db.Exec("INSERT INTO games DEFAULT VALUES")
+func NewGame(db *sqlx.DB, channelID string) error {
+	stmt, err := db.Prepare("INSERT INTO	games(channel_id) VALUES($1)")
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	_, err = stmt.Exec(channelID)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -51,13 +57,13 @@ func NewGame(db *sqlx.DB) error {
 }
 
 func (game *Game) Create(db *sqlx.DB) error {
-	stmt, err := db.Prepare("INSERT INTO	games(state, phase, phase_count) VALUES($1, $2, $3)")
+	stmt, err := db.Prepare("INSERT INTO	games(state, phase, phase_count, channel_id) VALUES($1, $2, $3, $4)")
 	if err != nil {
 		log.Println(err)
 		return err
 	}
 
-	_, err = stmt.Exec(game.State, game.Phase, game.PhaseCount)
+	_, err = stmt.Exec(game.State, game.Phase, game.PhaseCount, game.ChannelID)
 
 	return err
 }

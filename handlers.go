@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 
@@ -19,7 +20,9 @@ func ResponseHeaderHandler(next http.Handler) http.Handler {
 
 func GamesCreate(app *App) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		err := models.NewGame(app.db)
+		params, _ := requestParams(r.Body)
+
+		err := models.NewGame(app.db, params["channel_id"])
 
 		if err != nil {
 			w.WriteHeader(http.StatusUnprocessableEntity)
@@ -34,30 +37,21 @@ func GamesCreate(app *App) http.Handler {
 
 // Join game - query Games table by an active open game by channel id
 func GamesJoin(app *App) http.Handler {
-	var requestParams map[string]string
-
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		body, err := ioutil.ReadAll(r.Body)
-
+		params, err := requestParams(r.Body)
 		if err != nil {
 			w.Write([]byte(err.Error()))
 			return
 		}
 
-		err = json.Unmarshal(body, &requestParams)
-		if err != nil {
-			w.Write([]byte(err.Error()))
-			return
-		}
-
-		game, err := models.ActiveGameOnChannel(app.db, requestParams["channel_id"])
+		game, err := models.ActiveGameOnChannel(app.db, params["channel_id"])
 		if err != nil {
 			w.Write([]byte(err.Error()))
 			return
 		}
 
 		player := models.Player{
-			Name:   requestParams["name"],
+			Name:   params["name"],
 			GameID: game.ID,
 		}
 
@@ -68,20 +62,24 @@ func GamesJoin(app *App) http.Handler {
 		}
 
 		response := fmt.Sprintf("%s is joining game %s", player.Name, game.ChannelID)
-		// create a player
-		// join the player to the game
-
-		// err := models.NewGame(app.db)
-
-		// if err != nil {
-		// 	w.WriteHeader(http.StatusUnprocessableEntity)
-		// 	w.Write([]byte(err.Error()))
-		// } else {
-		// 	textResponse := fmt.Sprintf("The game is starting")
-		// 	w.WriteHeader(http.StatusOK)
-		// 	w.Write([]byte(textResponse))
-		// }
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(response))
 	})
+}
+
+func requestParams(requestBody io.ReadCloser) (map[string]string, error) {
+	var params map[string]string
+
+	body, err := ioutil.ReadAll(requestBody)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(body, &params)
+	if err != nil {
+		return nil, err
+	}
+
+	return params, nil
 }
