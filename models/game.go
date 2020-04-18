@@ -16,7 +16,7 @@ const (
 )
 
 type Game struct {
-	ID         string    `json:"id" db:"id"`
+	ID         int       `json:"id" db:"id"`
 	State      gameState `json:"state" db:"state"`
 	Phase      int       `json:"phase" db:"phase"`
 	PhaseCount int       `json:"phase_count" db:"phase_count"`
@@ -33,6 +33,7 @@ func ActiveGameOnChannel(db *sqlx.DB, channelID string) (*Game, error) {
 
 	err := db.Get(&game, "SELECT * FROM games WHERE state = $1 AND channel_id = $2", game.State, game.ChannelID)
 	if err != nil {
+		log.Println(err)
 		return nil, err
 	}
 

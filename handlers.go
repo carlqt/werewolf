@@ -56,7 +56,18 @@ func GamesJoin(app *App) http.Handler {
 			return
 		}
 
-		response := fmt.Sprintf("%s is joining game %s", requestParams["name"], game.ChannelID)
+		player := models.Player{
+			Name:   requestParams["name"],
+			GameID: game.ID,
+		}
+
+		err = player.Create(app.db)
+		if err != nil {
+			w.Write([]byte(err.Error()))
+			return
+		}
+
+		response := fmt.Sprintf("%s is joining game %s", player.Name, game.ChannelID)
 		// create a player
 		// join the player to the game
 

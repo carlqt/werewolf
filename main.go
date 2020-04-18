@@ -48,6 +48,8 @@ func initDB() *sqlx.DB {
 }
 
 func main() {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+
 	app := newApp()
 	defer app.db.Close()
 
