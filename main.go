@@ -54,7 +54,7 @@ func main() {
 	defer app.db.Close()
 
 	router := mux.NewRouter()
-	router.Handle("/play", GamesCreate(&app)).Methods("GET")
+	router.Handle("/play", GamesCreate(&app)).Methods("POST")
 	router.Handle("/join", GamesJoin(&app)).Methods("POST")
 	router.Use(ResponseHeaderHandler)
 
