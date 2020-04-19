@@ -1,6 +1,8 @@
 package models
 
 import (
+	"database/sql"
+	"errors"
 	"log"
 	"time"
 
@@ -13,6 +15,7 @@ const (
 	Started gameState = iota
 	WaitingForPlayers
 	InProgress
+	End
 )
 
 type Game struct {
@@ -27,11 +30,10 @@ type Game struct {
 // Finds an active game on the channel (unique)
 func ActiveGameOnChannel(db *sqlx.DB, channelID string) (*Game, error) {
 	game := Game{
-		State:     WaitingForPlayers,
 		ChannelID: channelID,
 	}
 
-	err := db.Get(&game, "SELECT * FROM games WHERE state = $1 AND channel_id = $2", game.State, game.ChannelID)
+	err := db.Get(&game, "SELECT * FROM games WHERE state != $1 AND channel_id = $2", End, game.ChannelID)
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -41,6 +43,12 @@ func ActiveGameOnChannel(db *sqlx.DB, channelID string) (*Game, error) {
 }
 
 func NewGame(db *sqlx.DB, channelID string) error {
+	game, err := ActiveGameOnChannel(db, channelID)
+	if game != nil {
+		return errors.New("Game is currently in progress")
+	} else if err != nil && err != sql.ErrNoRows {
+		return err
+
 	stmt, err := db.Prepare("INSERT INTO	games(channel_id) VALUES($1)")
 	if err != nil {
 		log.Println(err)
