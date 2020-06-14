@@ -18,6 +18,8 @@ const (
 	End
 )
 
+const tableName = "games"
+
 type Game struct {
 	ID         int       `json:"id" db:"id"`
 	State      gameState `json:"state" db:"state"`
@@ -48,14 +50,16 @@ func NewGame(db *sqlx.DB, channelID string) error {
 		return errors.New("Game is currently in progress")
 	} else if err != nil && err != sql.ErrNoRows {
 		return err
+	}
 
-	stmt, err := db.Prepare("INSERT INTO	games(channel_id) VALUES($1)")
+	// Skip Starting state and move immediately to WaitingForPlayers state
+	stmt, err := db.Prepare("INSERT INTO	games(channel_id, state) VALUES($1, $2)")
 	if err != nil {
 		log.Println(err)
 		return err
 	}
 
-	_, err = stmt.Exec(channelID)
+	_, err = stmt.Exec(channelID, WaitingForPlayers)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -72,6 +76,15 @@ func (game *Game) Create(db *sqlx.DB) error {
 	}
 
 	_, err = stmt.Exec(game.State, game.Phase, game.PhaseCount, game.ChannelID)
+
+	return err
+}
+
+// NextEvent is a sad excuse for a State Machine
+func (game *Game) NextEvent(db *sqlx.DB) error {
+	game.State++
+
+	_, err := db.NamedExec("UPDATE games SET state=:state", game.State)
 
 	return err
 }

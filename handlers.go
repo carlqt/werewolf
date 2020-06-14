@@ -23,6 +23,10 @@ func GamesCreate(app *App) http.Handler {
 		params, _ := requestParams(r.Body)
 
 		err := models.NewGame(app.db, params["channel_id"])
+		// Create new game
+		// when successful, move state to "waiting for players"
+		// go routine to reply
+		// go routine for a countdown timer and move to next state
 
 		if err != nil {
 			w.WriteHeader(http.StatusUnprocessableEntity)
@@ -35,7 +39,7 @@ func GamesCreate(app *App) http.Handler {
 	})
 }
 
-// Join game - query Games table by an active open game by channel id
+// GamesJoin - join the game on the passed in channelID
 func GamesJoin(app *App) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		params, err := requestParams(r.Body)
