@@ -3,8 +3,6 @@ package models
 import (
 	"database/sql"
 	"log"
-
-	"github.com/jmoiron/sqlx"
 )
 
 type Player struct {
@@ -15,7 +13,7 @@ type Player struct {
 	State  int           `json:"state" db:"state"`
 }
 
-func (player *Player) Create(db *sqlx.DB) error {
+func (player *Player) Create() error {
 	stmt, err := db.Prepare("INSERT INTO players(game_id, role_id, name, state) VALUES($1, $2, $3, $4)")
 	if err != nil {
 		log.Println(err)

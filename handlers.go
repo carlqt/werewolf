@@ -10,6 +10,10 @@ import (
 	"github.com/carlqt/werewolf/models"
 )
 
+// type Controller struct {
+// 	userRepo repositories.User
+// }
+
 func ResponseHeaderHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -18,11 +22,11 @@ func ResponseHeaderHandler(next http.Handler) http.Handler {
 	})
 }
 
-func GamesCreate(app *App) http.Handler {
+func GamesCreate() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		params, _ := requestParams(r.Body)
 
-		err := models.NewGame(app.db, params["channel_id"])
+		err := models.NewGame(params["channel_id"])
 		// Create new game
 		// when successful, move state to "waiting for players"
 		// go routine to reply
@@ -40,7 +44,7 @@ func GamesCreate(app *App) http.Handler {
 }
 
 // GamesJoin - join the game on the passed in channelID
-func GamesJoin(app *App) http.Handler {
+func GamesJoin() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		params, err := requestParams(r.Body)
 		if err != nil {
@@ -48,22 +52,31 @@ func GamesJoin(app *App) http.Handler {
 			return
 		}
 
-		game, err := models.ActiveGameOnChannel(app.db, params["channel_id"])
-		if err != nil {
-			w.Write([]byte(err.Error()))
-			return
-		}
-
 		player := models.Player{
-			Name:   params["name"],
-			GameID: game.ID,
+			Name: params["name"],
 		}
 
-		err = player.Create(app.db)
+		game, player, err := models.Join(params["channel_id"], player)
 		if err != nil {
 			w.Write([]byte(err.Error()))
 			return
 		}
+		// game, err := models.ActiveGameOnChannel(app.db, params["channel_id"])
+		// if err != nil {
+		// 	w.Write([]byte(err.Error()))
+		// 	return
+		// }
+
+		// player := models.Player{
+		// 	Name:   params["name"],
+		// 	GameID: game.ID,
+		// }
+
+		// err = player.Create(app.db)
+		// if err != nil {
+		// 	w.Write([]byte(err.Error()))
+		// 	return
+		// }
 
 		response := fmt.Sprintf("%s is joining game %s", player.Name, game.ChannelID)
 		w.WriteHeader(http.StatusOK)
