@@ -89,6 +89,12 @@ func Join(channelID string, player Player) error {
 
 	// Create a player and associate it on the game
 	player.GameID = game.ID
+
+	playerExists, _ := PlayerExists(game.ID, player.Name)
+	if playerExists {
+		return errors.New("Player has already joined this game")
+	}
+
 	err = CreatePlayer(&player)
 	if err != nil {
 		return err

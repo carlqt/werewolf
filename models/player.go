@@ -22,3 +22,18 @@ func CreatePlayer(player *Player) error {
 
 	return nil
 }
+
+func PlayerExists(gameID int, name string) (bool, error) {
+	var id int
+	err := db.QueryRowx("SELECT id FROM players WHERE name = $1 AND game_id = $2", name, gameID).Scan(&id)
+
+	if err != nil && err != sql.ErrNoRows {
+		return true, err
+	}
+
+	if err == sql.ErrNoRows {
+		return false, nil
+	}
+
+	return true, nil
+}
