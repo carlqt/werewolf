@@ -5,14 +5,12 @@ import (
 	"errors"
 	"log"
 	"time"
-
-	sq "github.com/Masterminds/squirrel"
 )
 
-type gameState int
+type GameState int
 
 const (
-	Started gameState = iota
+	Started GameState = iota
 	WaitingForPlayers
 	InProgress
 	End
@@ -22,7 +20,7 @@ const tableName = "games"
 
 type Game struct {
 	ID         int       `json:"id" db:"id"`
-	State      gameState `json:"state" db:"state"`
+	State      GameState `json:"state" db:"state"`
 	Phase      int       `json:"phase" db:"phase"`
 	PhaseCount int       `json:"phase_count" db:"phase_count"`
 	ChannelID  string    `json:"channel_id" db:"channel_id"`
@@ -80,51 +78,21 @@ func (game *Game) Create() error {
 	return err
 }
 
-// NextEvent is a sad excuse for a State Machine
-func (game *Game) NextEvent() error {
-	game.State++
-
-	_, err := db.NamedExec("UPDATE games SET state=:state", game.State)
-
-	return err
-}
-
-func Find(builder sq.SelectBuilder) (Game, error) {
-	var game Game
-	err := builder.RunWith(db).QueryRow().Scan(&game.ID, &game.State, &game.ChannelID)
-
-	if err != nil {
-		return game, err
-	}
-
-	return game, nil
-}
-
 // Join creates a player on an active game that is on WaitingForPlayer state
-func Join(channelID string, player Player) (Game, Player, error) {
-	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-
-	// Search for game that is in WaitingForPlayers state
-	// condition := sq.Eq{"channel_id", channelID, "state", WaitingForPlayers}
-	sqBuilder := psql.Select("id, state, channel_id").From("games").Where("channel_id = ? AND state = ?", channelID, WaitingForPlayers)
-	game, err := Find(sqBuilder)
+func Join(channelID string, player Player) error {
+	var game Game
+	err := db.Get(&game, "SELECT * FROM games WHERE channel_id = $1 AND state = $2", channelID, WaitingForPlayers)
 
 	if err != nil {
-		return game, Player{}, err
+		return err
 	}
 
 	// Create a player and associate it on the game
 	player.GameID = game.ID
-	err = player.Create()
+	err = CreatePlayer(&player)
 	if err != nil {
-		return game, player, err
+		return err
 	}
 
-	return game, player, nil
-	// If there's an error, return an error
-
-	// validations
-	// If no game is found - Error
-	// If player create fails - Error
-	// If player is joining a game but he is not in that channel - error
+	return nil
 }

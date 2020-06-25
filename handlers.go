@@ -56,29 +56,13 @@ func GamesJoin() http.Handler {
 			Name: params["name"],
 		}
 
-		game, player, err := models.Join(params["channel_id"], player)
+		err = models.Join(params["channel_id"], player)
 		if err != nil {
 			w.Write([]byte(err.Error()))
 			return
 		}
-		// game, err := models.ActiveGameOnChannel(app.db, params["channel_id"])
-		// if err != nil {
-		// 	w.Write([]byte(err.Error()))
-		// 	return
-		// }
 
-		// player := models.Player{
-		// 	Name:   params["name"],
-		// 	GameID: game.ID,
-		// }
-
-		// err = player.Create(app.db)
-		// if err != nil {
-		// 	w.Write([]byte(err.Error()))
-		// 	return
-		// }
-
-		response := fmt.Sprintf("%s is joining game %s", player.Name, game.ChannelID)
+		response := fmt.Sprintf("%s is joining game %s", player.Name, params["channel_id"])
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(response))
 	})

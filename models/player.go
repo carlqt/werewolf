@@ -2,7 +2,6 @@ package models
 
 import (
 	"database/sql"
-	"log"
 )
 
 type Player struct {
@@ -13,18 +12,13 @@ type Player struct {
 	State  int           `json:"state" db:"state"`
 }
 
-func (player *Player) Create() error {
-	stmt, err := db.Prepare("INSERT INTO players(game_id, role_id, name, state) VALUES($1, $2, $3, $4)")
+// CreatePlayer creates a player
+func CreatePlayer(player *Player) error {
+	_, err := db.NamedExec("INSERT INTO players(game_id, role_id, name, state) VALUES(:game_id, :role_id, :name, :state)", player)
+
 	if err != nil {
-		log.Println(err)
 		return err
 	}
 
-	// if player.RoleID == 0
-
-	_, err = stmt.Exec(player.GameID, player.RoleID, player.Name, player.State)
-	if err != nil {
-		log.Println(err)
-	}
-	return err
+	return nil
 }
