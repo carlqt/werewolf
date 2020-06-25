@@ -45,6 +45,12 @@ func GamesCreate() http.Handler {
 
 // GamesJoin - join the game on the passed in channelID
 func GamesJoin() http.Handler {
+	// Creates a player to join an active game
+	// Every time a player successfully joins, send a response
+	// have a background job to start countdown timer
+	// Once timer hits 0, move to the next state
+	// Next state is Game Start and will be dealing with phases
+
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		params, err := requestParams(r.Body)
 		if err != nil {
