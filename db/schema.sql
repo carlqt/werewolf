@@ -48,6 +48,40 @@ ALTER SEQUENCE public.games_id_seq OWNED BY public.games.id;
 
 
 --
+-- Name: notifications; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.notifications (
+    id integer NOT NULL,
+    game_id integer,
+    message text,
+    notify_at timestamp without time zone,
+    sent boolean DEFAULT false NOT NULL,
+    created_at timestamp without time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: notifications_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.notifications_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: notifications_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.notifications_id_seq OWNED BY public.notifications.id;
+
+
+--
 -- Name: players; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -131,6 +165,13 @@ ALTER TABLE ONLY public.games ALTER COLUMN id SET DEFAULT nextval('public.games_
 
 
 --
+-- Name: notifications id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.notifications ALTER COLUMN id SET DEFAULT nextval('public.notifications_id_seq'::regclass);
+
+
+--
 -- Name: players id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -150,6 +191,14 @@ ALTER TABLE ONLY public.roles ALTER COLUMN id SET DEFAULT nextval('public.roles_
 
 ALTER TABLE ONLY public.games
     ADD CONSTRAINT games_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: notifications notifications_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.notifications
+    ADD CONSTRAINT notifications_pkey PRIMARY KEY (id);
 
 
 --
@@ -174,6 +223,14 @@ ALTER TABLE ONLY public.roles
 
 ALTER TABLE ONLY public.schema_migrations
     ADD CONSTRAINT schema_migrations_pkey PRIMARY KEY (version);
+
+
+--
+-- Name: notifications notifications_game_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.notifications
+    ADD CONSTRAINT notifications_game_id_fkey FOREIGN KEY (game_id) REFERENCES public.games(id);
 
 
 --
@@ -204,4 +261,5 @@ ALTER TABLE ONLY public.players
 INSERT INTO public.schema_migrations (version) VALUES
     ('20200414000728'),
     ('20200415000707'),
-    ('20200415000708');
+    ('20200415000708'),
+    ('20200711091639');
