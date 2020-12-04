@@ -4,6 +4,15 @@ services:
     restart: always
     image: postgres:12
     environment:
-      POSTGRES_HOST_AUTH_METHOD: "trust"
+      POSTGRES_PASSWORD: "postgres"
     ports:
       - "5433:5432"
+  pgweb:
+    restart: always
+    image: sosedoff/pgweb
+    ports:
+      - "8081:8081"
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@database:5432/werewolf?sslmode=disable
+    depends_on:
+      - database
