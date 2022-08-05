@@ -1,6 +1,9 @@
 # Getting Started
 
-run `docker-compose up -d`
+Install go-task https://taskfile.dev/installation/
 
-create the databse `dbmate create`
-run the migrations `dbmate up`
+run `go get` to install dependencies
+
+run `task prepare` to start db container
+
+run `task atlas_apply` to recreate DB using schema.hcl

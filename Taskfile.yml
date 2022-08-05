@@ -1,10 +1,6 @@
 version: '3'
 
 tasks:
-  migrate:
-    - dbmate create
-    - dbmate up
-
   prepare:
     - docker compose up
 
