@@ -10,3 +10,9 @@ tasks:
 
   start:
     - go run *.go
+
+  atlas_apply:
+    - atlas schema apply --env local
+
+  atlas_inspect:
+    - atlas schema inspect --env local

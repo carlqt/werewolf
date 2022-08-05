@@ -11,4 +11,7 @@ require (
 	github.com/rs/cors v1.8.2
 )
 
-require github.com/felixge/httpsnoop v1.0.1 // indirect
+require (
+	ariga.io/atlas v0.5.0 // indirect
+	github.com/felixge/httpsnoop v1.0.1 // indirect
+)
