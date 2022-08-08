@@ -22,25 +22,18 @@ func ResponseHeaderHandler(next http.Handler) http.Handler {
 	})
 }
 
-func GamesCreate() http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		params, _ := requestParams(r.Body)
+func (a *App) GamesCreate(w http.ResponseWriter, r *http.Request) {
+	params, _ := requestParams(r.Body)
 
-		err := models.NewGame(params["channel_id"])
-		// Create new game
-		// when successful, move state to "waiting for players"
-		// go routine to reply
-		// go routine for a countdown timer and move to next state
+	game, err := a.models.Games.NewGame(params["channel_id"])
 
-		if err != nil {
-			w.WriteHeader(http.StatusUnprocessableEntity)
-			w.Write([]byte(err.Error()))
-		} else {
-			textResponse := fmt.Sprintf("The game is starting")
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(textResponse))
-		}
-	})
+	if err != nil {
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		w.Write([]byte(err.Error()))
+	} else {
+		w.WriteHeader(http.StatusCreated)
+		json.NewEncoder(w).Encode(game)
+	}
 }
 
 // GamesJoin - join the game on the passed in channelID

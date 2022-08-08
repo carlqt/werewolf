@@ -1,17 +1,3 @@
-table "categories" {
-  schema = schema.public
-  column "id" {
-    null = false
-    type = integer
-  }
-  column "name" {
-    null = true
-    type = character_varying(100)
-  }
-  primary_key {
-    columns = [column.id]
-  }
-}
 table "games" {
   schema = schema.public
   column "id" {

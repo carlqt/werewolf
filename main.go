@@ -1,36 +1,50 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 
 	"net/http"
 
-	"github.com/carlqt/werewolf/models"
+	"github.com/carlqt/internal/entities"
+	"github.com/carlqt/internal/models"
 	"github.com/gorilla/handlers"
-	"github.com/gorilla/mux"
+	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
-	"github.com/rs/cors"
 )
 
+type App struct {
+	// entities entities.Entities
+	models models.Models
+}
+
 func main() {
+	app := NewApp()
+	app.Start()
+}
+
+func NewApp() *App {
+	db, err := sqlx.Connect("postgres", "user=postgres dbname=werewolf password=postgres sslmode=disable port=5433")
+	if err != nil {
+		panic(err)
+	}
+
+	entities := entities.NewEntities(db)
+
+	app := &App{
+		models: models.NewModels(entities),
+	}
+
+	return app
+}
+
+func (a *App) Start() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	port := "8000"
 
-	db := models.InitDB()
-	defer db.Close()
+	loggedRouter := handlers.LoggingHandler(os.Stdout, a.NewRouter())
 
-	router := mux.NewRouter()
-	router.Handle("/play", GamesCreate()).Methods("POST")
-	router.Handle("/join", GamesJoin()).Methods("POST")
-	router.Use(ResponseHeaderHandler)
-
-	corsOptions := cors.New(cors.Options{
-		// AllowedOrigins: []string{"*"},
-		AllowedMethods: []string{"OPTIONS", "GET", "POST"},
-		AllowedHeaders: []string{"Content-Type"},
-	})
-
-	log.Println("starting at port 8000")
-	loggedRouter := handlers.LoggingHandler(os.Stdout, router)
-	http.ListenAndServe(":8000", corsOptions.Handler(loggedRouter))
+	log.Printf("starting at port %s", port)
+	http.ListenAndServe(fmt.Sprintf(":%s", port), loggedRouter)
 }
