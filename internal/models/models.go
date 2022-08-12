@@ -5,7 +5,6 @@ import (
 )
 
 type Models struct {
-	// Games GameEntity
 	Games GameModel
 }
 

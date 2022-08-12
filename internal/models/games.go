@@ -8,8 +8,13 @@ import (
 	"github.com/carlqt/internal/entities"
 )
 
+type GameInterface interface {
+	FindActiveGameByChannelID(string) (*entities.Game, error)
+	Create(*entities.Game) error
+}
+
 type GameModel struct {
-	GameEntity entities.GameEntity
+	GameEntity GameInterface
 }
 
 // NewGame creates a new game row if there is no active game for that channel
