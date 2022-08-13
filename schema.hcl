@@ -76,6 +76,10 @@ table "players" {
     null = false
     type = serial
   }
+  column "external_id" {
+    null = true
+    type = character_varying(100)
+  }
   column "game_id" {
     null = true
     type = integer
@@ -87,10 +91,6 @@ table "players" {
   column "name" {
     null = true
     type = character_varying(128)
-  }
-  column "uid" {
-    null = true
-    type = character_varying(255)
   }
   column "state" {
     null    = false

@@ -10,6 +10,7 @@ import (
 
 type GameInterface interface {
 	FindActiveGameByChannelID(string) (*entities.Game, error)
+	FindJoinableGame(string) (*entities.Game, error)
 	Create(*entities.Game) error
 }
 

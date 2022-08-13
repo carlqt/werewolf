@@ -5,11 +5,13 @@ import (
 )
 
 type Models struct {
-	Games GameModel
+	Games   GameModel
+	Players PlayerModel
 }
 
 func NewModels(entities entities.Entities) Models {
 	return Models{
-		Games: GameModel{GameEntity: entities.Games},
+		Games:   GameModel{GameEntity: entities.Games},
+		Players: PlayerModel{GameEntity: entities.Games, PlayerEntity: entities.Players},
 	}
 }

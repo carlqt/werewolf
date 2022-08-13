@@ -58,3 +58,20 @@ func (g GameEntity) FindActiveGameByChannelID(channelID string) (*Game, error) {
 
 	return &game, nil
 }
+
+func (g GameEntity) FindJoinableGame(channelID string) (*Game, error) {
+	game := Game{
+		ChannelID: channelID,
+	}
+
+	err := g.DB.Get(&game, "SELECT * FROM games WHERE state = $1 AND channel_id = $2", WaitingForPlayers, game.ChannelID)
+
+	if err == sql.ErrNoRows {
+		return nil, nil
+	} else if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	return &game, nil
+}

@@ -2,17 +2,22 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
 
-	"github.com/carlqt/werewolf/models"
+	"github.com/carlqt/internal/entities"
 )
 
-// type Controller struct {
-// 	userRepo repositories.User
+// playerParams is the schema of request params made for GamesJoin
+// type playerParams struct {
+// 	name      string `json:"name"`
+// 	ChannelID string `json:"channel_id"`
 // }
+
+type errorResponse struct {
+	Message string `json:"message"`
+}
 
 func ResponseHeaderHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -28,43 +33,41 @@ func (a *App) GamesCreate(w http.ResponseWriter, r *http.Request) {
 	game, err := a.models.Games.NewGame(params["channel_id"])
 
 	if err != nil {
-		w.WriteHeader(http.StatusUnprocessableEntity)
-		w.Write([]byte(err.Error()))
+		renderError(err, w)
 	} else {
 		w.WriteHeader(http.StatusCreated)
 		json.NewEncoder(w).Encode(game)
 	}
 }
 
-// GamesJoin - join the game on the passed in channelID
-func GamesJoin() http.Handler {
-	// Creates a player to join an active game
-	// Every time a player successfully joins, send a response
-	// have a background job to start countdown timer
-	// Once timer hits 0, move to the next state
-	// Next state is Game Start and will be dealing with phases
+func (a *App) GamesJoin(w http.ResponseWriter, r *http.Request) {
+	params, err := requestParams(r.Body)
+	if err != nil {
+		renderError(err, w)
+		return
+	}
 
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		params, err := requestParams(r.Body)
-		if err != nil {
-			w.Write([]byte(err.Error()))
-			return
-		}
+	player := entities.Player{
+		ExternalID: params["external_id"],
+		Name:       params["name"],
+	}
 
-		player := models.Player{
-			Name: params["name"],
-		}
+	err = a.models.Players.JoinGame(params["channel_id"], &player)
 
-		err = models.Join(params["channel_id"], player)
-		if err != nil {
-			w.Write([]byte(err.Error()))
-			return
-		}
+	if err != nil {
+		renderError(err, w)
+	} else {
+		w.WriteHeader(http.StatusCreated)
+		json.NewEncoder(w).Encode(player)
 
-		response := fmt.Sprintf("%s is joining game %s", player.Name, params["channel_id"])
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(response))
-	})
+	}
+}
+
+func renderError(err error, w http.ResponseWriter) {
+	errorResp := errorResponse{Message: err.Error()}
+
+	w.WriteHeader(http.StatusUnprocessableEntity)
+	json.NewEncoder(w).Encode(errorResp)
 }
 
 func requestParams(requestBody io.ReadCloser) (map[string]string, error) {

@@ -13,6 +13,10 @@ func (m mockEntity) FindActiveGameByChannelID(channelID string) (*entities.Game,
 	return new(entities.Game), nil
 }
 
+func (m mockEntity) FindJoinableGame(channelID string) (*entities.Game, error) {
+	return new(entities.Game), nil
+}
+
 func (m mockEntity) Create(*entities.Game) error {
 	return nil
 }
